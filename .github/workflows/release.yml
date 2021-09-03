@@ -1,0 +1,102 @@
+name: Publish Package
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:  # Manually start a workflow
+
+jobs:
+  release-windows:
+    runs-on: windows-2016
+    env:
+      MSVER: "14.16.27023"
+      WKITVER: "10.0.17134.0"
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup MSVC++
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+          sdk: ${{ env.WKITVER }}
+          toolset: ${{ env.MSVER }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '2.7'
+      - name: Building 
+        run: |
+          .\make.bat
+      - uses: actions/upload-artifact@v2
+        name: Upload artifact
+        with:
+          name: windows
+          path: Build/Bundles/ohNet-*.tar.gz
+      - uses: svenstaro/upload-release-action@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        name: Upload attachment to release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: Build/Bundles/ohNet-*.tar.gz
+          tag: ${{ github.ref }}
+
+  release-linux:
+    env:
+      CONAN_GCC_VERSIONS: 9
+      CONAN_ARCHS: x86_64
+      OH_PLATFORM: Linux-x64
+      COMPILER_NAME: gcc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '2.7'
+      - name: Setup environment 
+        shell: bash
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y mono-roslyn
+      - name: Building 
+        shell: bash
+        run: |
+          make
+      - uses: actions/upload-artifact@v2
+        name: Upload artifact
+        with:
+          name: linux
+          path: Build/Bundles/ohNet-*.tar.gz
+      - uses: svenstaro/upload-release-action@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        name: Upload attachment to release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: Build/Bundles/ohNet-*.tar.gz
+          tag: ${{ github.ref }}
+
+  release-osx:
+    runs-on: macOS-latest
+    env:
+      OH_PLATFORM: Mac-x64
+    steps:
+      - uses: actions/checkout@master
+      - name: Building
+        run: |
+          make
+      - name: Log files
+        run: |
+          ls -al Build/Bundles
+      - uses: actions/upload-artifact@v2
+        name: Upload artifact
+        with:
+          name: mac
+          path: Build/Bundles/ohNet-*.tar.gz
+      - uses: svenstaro/upload-release-action@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        name: Upload attachment to release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: Build/Bundles/ohNet-*.tar.gz
+          tag: ${{ github.ref }}

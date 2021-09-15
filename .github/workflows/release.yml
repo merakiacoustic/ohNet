@@ -81,6 +81,9 @@ jobs:
       OH_PLATFORM: Mac-x64
     steps:
       - uses: actions/checkout@master
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '11.2.1'
       - name: Building
         run: |
           make

@@ -2,7 +2,6 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(ohNet LANGUAGES CXX C)
 
-
 set(mDNSdir thirdparty/mDNSResponder-1310.80.1)
 
 set(SourcesMain
@@ -72,6 +71,8 @@ set(SourcesMain
     ${mDNSdir}/mDNSCore/DNSDigest.c
     ${mDNSdir}/mDNSCore/mDNS.c
     ${mDNSdir}/mDNSCore/uDNS.c
+    ${mDNSdir}/mDNSShared/dnssd_clientshim.c
+    ${mDNSdir}/mDNSShared/dnssd_clientlib.c
     OpenHome/Net/Device/Bonjour/MdnsPlatform.cpp
     OpenHome/Net/Device/Bonjour/MdnsProvider.cpp
     OpenHome/md5.c
@@ -108,9 +109,12 @@ set(SourcesMain
     Os/Posix/TerminalOs.cpp
     Os/Posix/Os.c
     Os/Posix/SignalHandlers.cpp
+    Os/Posix/Main.cpp
     OpenHome/Shell/Shell.cpp
     OpenHome/Shell/InfoProvider.cpp
-    OpenHome/Shell/ShellCommandDebug.cpp)
+    OpenHome/Shell/ShellCommandDebug.cpp
+    OpenHome/TIpAddressUtils.cpp
+    OpenHome/DnsChangeNotifier.cpp)
 
 add_library(ohNet SHARED ${SourcesMain})
 
@@ -148,7 +152,7 @@ macro(header_copy part base whole dir outdir list)
     foreach(HeaderFile ${list})
         add_custom_command(TARGET ${part} PRE_BUILD
             COMMAND ${CMAKE_COMMAND} -E
-            copy ${dir}/${HeaderFile} ${outdir})
+            copy_if_different ${dir}/${HeaderFile} ${outdir})
     endforeach()
 
     add_dependencies(${whole} ${part})
@@ -181,8 +185,10 @@ set(NetDeviceLpec_prv DviProtocolLpec.h DviServerLpec.h)
 set(NetDeviceUpnp DviServerUpnp.h DviServerWebSocket.h DviSsdpNotifier.h DviProtocolUpnp.h)
 set(NetDeviceProviders DvOpenhomeOrgSubscriptionLongPoll1.h)
 set(NetDeviceBonjourmDNSCore mDNSDebug.h mDNSEmbeddedAPI.h)
-set(MDNS mDNSFeatures.h dns_sd.h dns_sd_internal.h dns_sd_private.h)
-set(MDNS_prv dns_sd.h)
+set(NetDeviceBonjourmDNSCore_root mDNSDebug.h mDNSEmbeddedAPI.h)
+set(NetDeviceBonjourmDNSShared mDNSFeatures.h dns_sd.h dns_sd_internal.h dns_sd_private.h)
+set(NetDeviceBonjourmDNSShared_prv dns_sd.h)
+set(TestFramework TestFramework.h OptionParser.h SuiteUnitTest.h TimerFactoryMock.h)
 message("CMake source dir is " ${CMAKE_SOURCE_DIR})
 
 header_copy(header1 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/OpenHome ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome/Private "${PrivateHeaderFiles}")
@@ -212,8 +218,11 @@ header_copy(header24 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/OpenHome/Net/De
 header_copy(header25 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/OpenHome/Net/Device/Upnp ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome/Net/Private "${NetDeviceUpnp}")
 header_copy(header26 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/OpenHome/Net/Device/Providers ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome/Net/Core "${NetDeviceProviders}")
 header_copy(header27 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/${mDNSdir}/mDNSCore ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome/Net/Private "${NetDeviceBonjourmDNSCore}")
-header_copy(header28 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/${mDNSdir}/mDNSShared ${CMAKE_CURRENT_BINARY_DIR}/Temp/ "${MDNS}")
-header_copy(header29 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/${mDNSdir}/mDNSShared ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome/Net/Private "${MDNS_prv}")
+header_copy(header28 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/${mDNSdir}/mDNSShared ${CMAKE_CURRENT_BINARY_DIR}/Temp/ "${NetDeviceBonjourmDNSShared}")
+header_copy(header29 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/${mDNSdir}/mDNSShared ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome/Net/Private "${NetDeviceBonjourmDNSShared_prv}")
+header_copy(header30 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/OpenHome/TestFramework ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome/Private "${TestFramework}")
+header_copy(header31 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/${mDNSdir}/mDNSCore ${CMAKE_CURRENT_BINARY_DIR}/Temp/ "${NetDeviceBonjourmDNSCore_root}")
+
 message("Creating files in " ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome)
 target_include_directories(ohNet SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
 set(GENERATED_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/Temp PARENT_SCOPE)
@@ -227,3 +236,24 @@ endif(DEBUG_LOG)
 target_compile_definitions(ohNet PUBLIC ${ENDIANNESS})
 add_dependencies(ohNet IncludeCopy)
 target_link_libraries(ohNet)
+
+# tests
+target_compile_definitions(ohNet PUBLIC _GNU_SOURCE)
+
+file(GLOB test_files
+    OpenHome/TestFramework/*.cpp
+)
+add_library(testFramework ${test_files})
+target_include_directories(testFramework SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+target_compile_definitions(testFramework PUBLIC ${ENDIANNESS})
+target_compile_definitions(testFramework PUBLIC _GNU_SOURCE)
+
+add_library(TestBufferMain OpenHome/Tests/TestBufferMain.cpp)
+target_include_directories(TestBufferMain SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+target_compile_definitions(TestBufferMain PUBLIC ${ENDIANNESS})
+target_compile_definitions(TestBufferMain PUBLIC _GNU_SOURCE)
+
+add_executable(TestBuffer OpenHome/Tests/TestBuffer.cpp)
+target_compile_definitions(TestBuffer PUBLIC _GNU_SOURCE)
+target_include_directories(TestBuffer SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+target_link_libraries(TestBuffer PUBLIC ohNet testFramework TestBufferMain)

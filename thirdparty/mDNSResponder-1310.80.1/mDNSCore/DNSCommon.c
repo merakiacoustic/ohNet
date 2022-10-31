@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#ifndef STANDALONE
 // Set mDNS_InstantiateInlines to tell mDNSEmbeddedAPI.h to instantiate inline functions, if necessary
 #define mDNS_InstantiateInlines 1
+#include "mDNSEmbeddedAPI.h"
 #include "DNSCommon.h"
 #if MDNSRESPONDER_SUPPORTS(APPLE, DNSSECv2)
 #include "dnssec_v2.h"
@@ -120,6 +120,8 @@ extern mDNS mDNSStorage;
 #pragma mark - General Utility Functions
 #endif
 
+#ifndef DEFINE_WINDOWS_UNIVERSAL // cannot build as c++ on winrt arm so def it out...
+
 // return true for RFC1918 private addresses
 mDNSexport mDNSBool mDNSv4AddrIsRFC1918(const mDNSv4Addr * const addr)
 {
@@ -189,7 +191,7 @@ mDNSexport mDNSu32 NumCacheRecordsForInterfaceID(const mDNS *const m, mDNSInterf
     return(used);
 }
 
-mDNSexport char *DNSTypeName(mDNSu16 rrtype)
+mDNSexport const char *DNSTypeName(mDNSu16 rrtype)
 {
     switch (rrtype)
     {
@@ -1333,7 +1335,6 @@ mDNSexport mDNSu32 RDataHashValue(const ResourceRecord *const rr)
         sum = DomainNameHashValue((domainname *)rdb->data);
         ptr += dlen;
         len -= dlen;
-        fallthrough();
         /* FALLTHROUGH */
     }
 
@@ -1863,8 +1864,6 @@ mDNSexport void InitializeDNSMessage(DNSMessageHeader *h, mDNSOpaque16 id, mDNSO
     h->numAdditionals = 0;
 }
 
-#endif // !STANDALONE
-
 mDNSexport const mDNSu8 *FindCompressionPointer(const mDNSu8 *const base, const mDNSu8 *const end, const mDNSu8 *const domname)
 {
     const mDNSu8 *result = end - *domname - 1;
@@ -1970,8 +1969,6 @@ mDNSexport mDNSu8 *putDomainNameAsLabels(const DNSMessage *const msg,
     *ptr++ = 0;     // Put the final root label
     return(ptr);
 }
-
-#ifndef STANDALONE
 
 mDNSlocal mDNSu8 *putVal16(mDNSu8 *ptr, mDNSu16 val)
 {
@@ -3421,7 +3418,8 @@ mDNSlocal void DNSMessageDumpToLog(const DNSMessage *const msg, const mDNSu8 *co
     questions[0] = '\0';
     char *questions_dst = questions;
     const char *const questions_lim = &questions[512];
-    for (mDNSu32 i = 0; i < msg->h.numQuestions; i++)
+    mDNSu32 i = 0;
+    for (i = 0; i < msg->h.numQuestions; i++)
     {
         mDNSu16 qtype, qclass;
 
@@ -3444,7 +3442,7 @@ mDNSlocal void DNSMessageDumpToLog(const DNSMessage *const msg, const mDNSu8 *co
     char *rrs_dst = rrs;
     const char *const rrs_lim = &rrs[512];
     const mDNSu32 rrcount = msg->h.numAnswers + msg->h.numAuthorities + msg->h.numAdditionals;
-    for (mDNSu32 i = 0; i < rrcount; i++)
+    for (i = 0; i < rrcount; i++)
     {
         mDNSu16 rrtype, rrclass, rdlength;
         mDNSu32 ttl;
@@ -4121,7 +4119,6 @@ decimal:    if (!F.havePrecision)
 
             case 'p':  F.havePrecision = F.lSize = 1;
                 F.precision = sizeof(void*) * 2;                // 8 characters on 32-bit; 16 characters on 64-bit
-                fallthrough();
             case 'X':  digits = kHexDigitsUppercase;
                 goto hexadecimal;
             case 'x':  digits = kHexDigitsLowercase;
@@ -4337,4 +4334,22 @@ mDNSexport mDNSBool GetReverseIPv6Addr(const domainname *name, mDNSu8 outIPv6[16
     if (outIPv6) mDNSPlatformMemCopy(outIPv6, ipv6, 16);
     return (mDNStrue);
 }
-#endif // !STANDALONE
+
+#else // DEFINE_WINDOWS_UNIVERSAL
+
+mDNSexport mDNSBool MakeDomainLabelFromLiteralString(domainlabel *const /*label*/, const char * /*cstr*/)
+{
+	return (mDNSBool)1;
+}
+
+ mDNSexport mDNSu8 *MakeDomainNameFromDNSNameString(domainname *const /*name*/, const char * /*cstr*/)
+{
+	return (mDNSu8)0;
+}
+
+mDNSexport mDNSu32 mDNS_vsnprintf(char * /*sbuffer*/, mDNSu32 /*buflen*/, const char * /*fmt*/, va_list /*arg*/)  	
+{
+	return (mDNSu32)0;
+}
+
+#endif //DEFINE_WINDOWS_UNIVERSAL

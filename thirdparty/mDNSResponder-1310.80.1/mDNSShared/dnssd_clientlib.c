@@ -183,7 +183,7 @@ void DNSSD_API TXTRecordCreate
     void             *buffer
 )
 {
-    txtRec->buffer   = buffer;
+    txtRec->buffer   = (uint8_t*)buffer;
     txtRec->buflen   = buffer ? bufferLen : (uint16_t)0;
     txtRec->datalen  = 0;
     txtRec->malloced = 0;
@@ -216,7 +216,7 @@ DNSServiceErrorType DNSSD_API TXTRecordSetValue
         unsigned char *newbuf;
         unsigned long newlen = txtRec->datalen + keyvalsize;
         if (newlen > 0xFFFF) return(kDNSServiceErr_Invalid);
-        newbuf = malloc((size_t)newlen);
+        newbuf = (unsigned char*)malloc((size_t)newlen);
         if (!newbuf) return(kDNSServiceErr_NoMemory);
         memcpy(newbuf, txtRec->buffer, txtRec->datalen);
         if (txtRec->malloced) free(txtRec->buffer);

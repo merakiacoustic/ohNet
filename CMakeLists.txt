@@ -109,7 +109,7 @@ set(SourcesMain
     Os/Posix/TerminalOs.cpp
     Os/Posix/Os.c
     Os/Posix/SignalHandlers.cpp
-    Os/Posix/Main.cpp
+    # Os/Posix/Main.cpp
     OpenHome/Shell/Shell.cpp
     OpenHome/Shell/InfoProvider.cpp
     OpenHome/Shell/ShellCommandDebug.cpp
@@ -248,12 +248,18 @@ target_include_directories(testFramework SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_D
 target_compile_definitions(testFramework PUBLIC ${ENDIANNESS})
 target_compile_definitions(testFramework PUBLIC _GNU_SOURCE)
 
-add_library(TestBufferMain OpenHome/Tests/TestBufferMain.cpp)
-target_include_directories(TestBufferMain SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
-target_compile_definitions(TestBufferMain PUBLIC ${ENDIANNESS})
-target_compile_definitions(TestBufferMain PUBLIC _GNU_SOURCE)
+# add_library(TestBufferMain OpenHome/Tests/TestBufferMain.cpp)
+# target_include_directories(TestBufferMain SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+# target_compile_definitions(TestBufferMain PUBLIC ${ENDIANNESS})
+# target_compile_definitions(TestBufferMain PUBLIC _GNU_SOURCE)
 
-add_executable(TestBuffer OpenHome/Tests/TestBuffer.cpp)
-target_compile_definitions(TestBuffer PUBLIC _GNU_SOURCE)
-target_include_directories(TestBuffer SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
-target_link_libraries(TestBuffer PUBLIC ohNet testFramework TestBufferMain)
+# add_executable(TestBuffer OpenHome/Tests/TestBuffer.cpp)
+# target_compile_definitions(TestBuffer PUBLIC _GNU_SOURCE)
+# target_include_directories(TestBuffer SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+# target_link_libraries(TestBuffer PUBLIC ohNet testFramework TestBufferMain)
+
+add_executable(finder src/finder.cpp)
+target_include_directories(finder SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+target_compile_definitions(finder PUBLIC ${ENDIANNESS})
+target_compile_definitions(finder PUBLIC _GNU_SOURCE)
+target_link_libraries(finder PUBLIC ohNet)

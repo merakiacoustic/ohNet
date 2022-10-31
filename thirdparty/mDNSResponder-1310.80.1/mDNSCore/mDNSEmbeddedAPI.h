@@ -156,20 +156,6 @@ extern "C" {
  #endif
 #endif
 
-#ifndef fallthrough
- #if __clang__
-  #if __has_c_attribute(fallthrough)
-   #define fallthrough() [[fallthrough]]
-  #else
-   #define fallthrough()
-  #endif
- #elif __GNUC__
-  #define fallthrough() __attribute__((fallthrough))
- #else
-  #define fallthrough()
- #endif // __GNUC__
-#endif // fallthrough
-
 // ***************************************************************************
 #if 0
 #pragma mark - DNS Resource Record class and type constants
@@ -307,6 +293,9 @@ typedef const struct mDNSInterfaceID_dummystruct { void *dummy; } *mDNSInterface
 // and if you make the mistake of trying to do those using the NotAnInteger field, then you'll
 // find you get code that doesn't work consistently on big-endian and little-endian machines.
 #if defined(_WIN32)
+ #ifdef interface
+ #undef interface
+ #endif
  #pragma pack(push,2)
 #endif
 typedef       union { mDNSu8 b[ 2]; mDNSu16 NotAnInteger; } mDNSOpaque16;
@@ -1973,7 +1962,7 @@ typedef void ZoneDataCallback (mDNS *const m, mStatus err, const ZoneData *resul
 struct ZoneData_struct
 {
     domainname ChildName;               // Name for which we're trying to find the responsible server
-    ZoneService ZoneService;            // Which service we're seeking for this zone (update, query, or LLQ)
+    ZoneService Service;                // Which service we're seeking for this zone (update, query, or LLQ)
     domainname       *CurrentSOA;       // Points to somewhere within ChildName
     domainname ZoneName;                // Discovered result: Left-hand-side of SOA record
     mDNSu16 ZoneClass;                  // Discovered result: DNS Class from SOA record
@@ -1981,7 +1970,7 @@ struct ZoneData_struct
     mDNSIPPort Port;                    // Discovered result: Update port, query port, or LLQ port from SRV record
     mDNSAddr Addr;                      // Discovered result: Address of Target host from SRV record
     mDNSBool ZonePrivate;               // Discovered result: Does zone require encrypted queries?
-    ZoneDataCallback *ZoneDataCallback; // Caller-specified function to be called upon completion
+    ZoneDataCallback *DataCallback;     // Caller-specified function to be called upon completion
     void             *ZoneDataContext;
     DNSQuestion question;               // Storage for any active question
 };
@@ -2582,7 +2571,7 @@ extern void    mDNS_FinalExit (mDNS *const m);
 #define mDNS_Close(m) do { mDNS_StartExit(m); mDNS_FinalExit(m); } while(0)
 #define mDNS_ExitNow(m, now) ((now) - (m)->ShutdownTime >= 0 || (!(m)->ResourceRecords))
 
-extern mDNSs32 mDNS_Execute   (mDNS *const m);
+extern mDNSBool mDNS_Execute   (mDNS *const m);
 
 extern mStatus mDNS_Register  (mDNS *const m, AuthRecord *const rr);
 extern mStatus mDNS_Update    (mDNS *const m, AuthRecord *const rr, mDNSu32 newttl,
@@ -2815,7 +2804,7 @@ extern mDNSu32 mDNS_vsnprintf(char *sbuffer, mDNSu32 buflen, const char *fmt, va
 extern mDNSu32 mDNS_snprintf(char *sbuffer, mDNSu32 buflen, const char *fmt, ...) IS_A_PRINTF_STYLE_FUNCTION(3,4);
 extern void mDNS_snprintf_add(char **dst, const char *lim, const char *fmt, ...) IS_A_PRINTF_STYLE_FUNCTION(3,4);
 extern mDNSu32 NumCacheRecordsForInterfaceID(const mDNS *const m, mDNSInterfaceID id);
-extern char *DNSTypeName(mDNSu16 rrtype);
+extern const char *DNSTypeName(mDNSu16 rrtype);
 extern const char *mStatusDescription(mStatus error);
 extern char *GetRRDisplayString_rdb(const ResourceRecord *const rr, const RDataBody *const rd1, char *const buffer);
 #define RRDisplayString(m, rr) GetRRDisplayString_rdb(rr, &(rr)->rdata->u, (m)->MsgBuffer)
@@ -3127,7 +3116,7 @@ extern void       mDNSPlatformTLSTearDownCerts(void);
 
 extern mDNSBool   mDNSPlatformSetDNSConfig(mDNSBool setservers, mDNSBool setsearch, domainname *const fqdn, DNameListElem **RegDomains,
                                            DNameListElem **BrowseDomains, mDNSBool ackConfig);
-extern mStatus    mDNSPlatformGetPrimaryInterface(mDNSAddr *v4, mDNSAddr *v6, mDNSAddr *router);
+extern mStatus    mDNSPlatformGetPrimaryInterface(mDNS *const m, mDNSAddr *v4, mDNSAddr *v6, mDNSAddr *router);
 extern void       mDNSPlatformDynDNSHostNameStatusChanged(const domainname *const dname, const mStatus status);
 
 extern void       mDNSPlatformSetAllowSleep(mDNSBool allowSleep, const char *reason);

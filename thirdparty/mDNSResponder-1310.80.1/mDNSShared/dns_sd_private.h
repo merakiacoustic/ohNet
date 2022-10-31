@@ -17,7 +17,7 @@
 #ifndef _DNS_SD_PRIVATE_H
 #define _DNS_SD_PRIVATE_H
 
-#include <dns_sd.h>
+#include "dns_sd.h"
 
 #if !defined(DNS_SD_EXCLUDE_PRIVATE_API)
     #if defined(__APPLE__)

@@ -2,6 +2,26 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(ohNet LANGUAGES CXX C)
 
+set(platform Posix)
+
+if(WIN32)
+    set(platform Windows)
+    set(CMAKE_SYSTEM_NAME Windows)
+    set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
+
+    set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
+    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
+    set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
+
+    set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
+
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+    
+    SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 set(mDNSdir thirdparty/mDNSResponder-1310.80.1)
 
 set(SourcesMain
@@ -105,11 +125,11 @@ set(SourcesMain
     OpenHome/Net/Bindings/C/OhNetCDv.cpp
     OpenHome/Net/Bindings/C/OhNetCCombined.cpp
     Os/OsWrapper.cpp
-    Os/Posix/File.cpp
-    Os/Posix/TerminalOs.cpp
-    Os/Posix/Os.c
-    Os/Posix/SignalHandlers.cpp
-    # Os/Posix/Main.cpp
+    Os/${platform}/File.cpp
+    Os/${platform}/TerminalOs.cpp
+    Os/${platform}/Os.c
+    Os/${platform}/SignalHandlers.cpp
+    # Os/${platform}/Main.cpp
     OpenHome/Shell/Shell.cpp
     OpenHome/Shell/InfoProvider.cpp
     OpenHome/Shell/ShellCommandDebug.cpp
@@ -235,18 +255,16 @@ endif(DEBUG_LOG)
 
 target_compile_definitions(ohNet PUBLIC ${ENDIANNESS})
 add_dependencies(ohNet IncludeCopy)
-target_link_libraries(ohNet)
 
 # tests
-target_compile_definitions(ohNet PUBLIC _GNU_SOURCE)
 
-file(GLOB test_files
-    OpenHome/TestFramework/*.cpp
-)
-add_library(testFramework ${test_files})
-target_include_directories(testFramework SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
-target_compile_definitions(testFramework PUBLIC ${ENDIANNESS})
-target_compile_definitions(testFramework PUBLIC _GNU_SOURCE)
+# file(GLOB test_files
+#     OpenHome/TestFramework/*.cpp
+# )
+# add_library(testFramework ${test_files})
+# target_include_directories(testFramework SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+# target_compile_definitions(testFramework PUBLIC ${ENDIANNESS})
+# target_compile_definitions(testFramework PUBLIC _GNU_SOURCE)
 
 # add_library(TestBufferMain OpenHome/Tests/TestBufferMain.cpp)
 # target_include_directories(TestBufferMain SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
@@ -261,5 +279,16 @@ target_compile_definitions(testFramework PUBLIC _GNU_SOURCE)
 add_executable(finder src/finder.cpp)
 target_include_directories(finder SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
 target_compile_definitions(finder PUBLIC ${ENDIANNESS})
-target_compile_definitions(finder PUBLIC _GNU_SOURCE)
 target_link_libraries(finder PUBLIC ohNet)
+
+if(WIN32)
+    target_compile_definitions(ohNet PUBLIC "/EHsca")
+    target_link_libraries(ohNet wsock32 ws2_32 iphlpapi dbghelp)
+    target_compile_definitions(ohNet PUBLIC _CRT_SECURE_NO_WARNINGS)
+    
+    target_compile_definitions(finder PUBLIC "/EHsca")
+    target_compile_definitions(finder PUBLIC _CRT_SECURE_NO_WARNINGS)
+else()
+    target_compile_definitions(ohNet PUBLIC _GNU_SOURCE)
+    target_compile_definitions(finder PUBLIC _GNU_SOURCE)
+endif()

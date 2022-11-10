@@ -18,7 +18,7 @@ if(WIN32)
     set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
     set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
     set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-    
+
     SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
@@ -285,9 +285,12 @@ if(WIN32)
     target_compile_definitions(ohNet PUBLIC "/EHsca")
     target_link_libraries(ohNet wsock32 ws2_32 iphlpapi dbghelp)
     target_compile_definitions(ohNet PUBLIC _CRT_SECURE_NO_WARNINGS)
-    
+
     target_compile_definitions(finder PUBLIC "/EHsca")
     target_compile_definitions(finder PUBLIC _CRT_SECURE_NO_WARNINGS)
+elseif(APPLE)
+    target_link_libraries(ohNet "-framework CoreFoundation -framework IOKit -framework SystemConfiguration")
+    target_compile_definitions(ohNet PUBLIC "-D PLATFORM_MACOSX_GNU")
 else()
     target_compile_definitions(ohNet PUBLIC _GNU_SOURCE)
     target_compile_definitions(finder PUBLIC _GNU_SOURCE)

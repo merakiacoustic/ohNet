@@ -129,6 +129,7 @@ set(SourcesMain
     Os/${platform}/TerminalOs.cpp
     Os/${platform}/Os.c
     Os/${platform}/SignalHandlers.cpp
+
     # Os/${platform}/Main.cpp
     OpenHome/Shell/Shell.cpp
     OpenHome/Shell/InfoProvider.cpp
@@ -259,7 +260,7 @@ add_dependencies(ohNet IncludeCopy)
 # tests
 
 # file(GLOB test_files
-#     OpenHome/TestFramework/*.cpp
+# OpenHome/TestFramework/*.cpp
 # )
 # add_library(testFramework ${test_files})
 # target_include_directories(testFramework SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
@@ -275,7 +276,6 @@ add_dependencies(ohNet IncludeCopy)
 # target_compile_definitions(TestBuffer PUBLIC _GNU_SOURCE)
 # target_include_directories(TestBuffer SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
 # target_link_libraries(TestBuffer PUBLIC ohNet testFramework TestBufferMain)
-
 add_executable(finder src/finder.cpp)
 target_include_directories(finder SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
 target_compile_definitions(finder PUBLIC ${ENDIANNESS})
@@ -295,3 +295,12 @@ else()
     target_compile_definitions(ohNet PUBLIC _GNU_SOURCE)
     target_compile_definitions(finder PUBLIC _GNU_SOURCE)
 endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    if(${CMAKE_CROSSCOMPILING})
+        # build with Arm / Pi-compiled libraries
+        find_package(Threads REQUIRED)
+        target_link_libraries(finder PRIVATE Threads::Threads)
+    endif()
+endif()
+

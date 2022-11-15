@@ -14,5 +14,6 @@ mkShell {
     gcc
     gnumake
     ninja
+    conan
   ];
 }

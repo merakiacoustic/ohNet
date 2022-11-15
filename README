@@ -1,3 +1,39 @@
+# Build and compile (Windows, Linux, MacOS)
+```sh
+🐧 mkdir build
+🐧 cd build
+🐧 cmake ..
+🐧 cmake --build . -v
+```
+
+# Cross compilation (Raspberry PI)
+Install ARM compiler, for example in ubuntu type in:
+```sh
+🐧 sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+```
+
+## Setup target system's libraries
+Before you can compile for the target system, you need to copy some headers and libs to the host filesystem. Assuming you have mounted the SD Card with installed Raspbian as `/mnt/rpi`, you can type in:
+```sh
+🐧 mkdir -p "$HOME/rpi/rootfs" # choose the path as you wish
+🐧 cp /mnt/rpi/lib "$HOME/rpi/rootfs" -rv
+🐧 cp /mnt/rpi/usr "$HOME/rpi/rootfs" -rv
+🐧 cp /mnt/rpi/opt/vc "$HOME/rpi/rootfs/opt" -rv
+```
+Then use your chosen path in the build command.
+
+# Build and compile
+```sh
+🐧 mkdir build-rpi
+🐧 cd build-rpi
+🐧 cmake -D CMAKE_TOOLCHAIN_FILE="../CMake/Toolchain-RaspberryPi.cmake" \
+          -D RPI_FS:STRING="$HOME/my/custom/rpifs" \ # if used preferred path, can omit this
+          ..
+🐧 cmake --build . -v
+```
+
+# Don't read further.
+
 ohNet library
 ------------
 ohNet is a library for the discovery, monitoring, manipulation and implementation

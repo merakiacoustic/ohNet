@@ -5,8 +5,11 @@ SET(CMAKE_SYSTEM_VERSION 1)
 SET(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)
 SET(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
 
+# User provided arguments
+SET(RPI_FS "$ENV{HOME}/rpi/rootfs" CACHE STRING "Root filesystem of Raspberry Pi")
+
 # Where is the target environment
-SET(CMAKE_FIND_ROOT_PATH $ENV{HOME}/rpi/rootfs)
+SET(CMAKE_FIND_ROOT_PATH "${RPI_FS}")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --sysroot=${CMAKE_FIND_ROOT_PATH}")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --sysroot=${CMAKE_FIND_ROOT_PATH}")
 SET(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} --sysroot=${CMAKE_FIND_ROOT_PATH}")

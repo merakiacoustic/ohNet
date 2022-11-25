@@ -1,8 +1,36 @@
+# Prerequisites
+## Install dependencies
+Install the latest [conan](https://pypi.org/project/conan/) via pip (at least version 1.54.0)
+
+
+If [libb64]((https://conan.io/center/libb64)) is available on [conan center](https://conan.io/center/), you can skip this step.
+If not, then you need to build the package locally.
+```sh
+🐧 git clone git@github.com:KGrzeg/libb64-conan.git # clone the repo
+🐧 cd libb64-conan
+🐧 direnv allow # or manually setup cmake and gcc
+🐧 git checkout 1.2.1-conanfile # switch to proper tag
+🐧 conan create . libb64/1.2.1@ # install package to conan's cache
+
+# verify that package is successfully installed
+🐧λ conan search libb64
+Existing package recipes:
+
+libb64/1.2.1
+
+# if everything is ok, you can delete the directory
+🐧 cd ..
+🐧 rm -rf libb64-conan
+```
+
+
 # Build and compile (Windows, Linux, MacOS)
 ```sh
 🐧 mkdir build
 🐧 cd build
+🐧 conan install .. --build missing
 🐧 cmake ..
+#optionally "🐧 cmake .. -GNinja" for quicker builds
 🐧 cmake --build . -v
 ```
 

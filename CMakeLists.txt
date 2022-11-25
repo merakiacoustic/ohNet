@@ -296,11 +296,8 @@ else()
     target_compile_definitions(finder PUBLIC _GNU_SOURCE)
 endif()
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    if(${CMAKE_CROSSCOMPILING})
-        # build with Arm / Pi-compiled libraries
-        find_package(Threads REQUIRED)
-        target_link_libraries(finder PRIVATE Threads::Threads)
-    endif()
+if(${COMPILE_FOR_RPI})
+    find_package(Threads REQUIRED)
+    target_link_libraries(finder PRIVATE Threads::Threads)
 endif()
 

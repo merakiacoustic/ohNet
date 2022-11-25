@@ -14,6 +14,6 @@ mkShell {
     gcc
     gnumake
     ninja
-    conan
+    # conan install manually the latest version!
   ];
 }

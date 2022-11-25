@@ -4,6 +4,9 @@ project(ohNet LANGUAGES CXX C)
 
 set(platform Posix)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 if(WIN32)
     set(platform Windows)
     set(CMAKE_SYSTEM_NAME Windows)
@@ -31,8 +34,6 @@ set(SourcesMain
     OpenHome/Net/Device/Bonjour/Bonjour.cpp
     OpenHome/Buffer.cpp
     OpenHome/Converter.cpp
-    thirdparty/libb64/cencode.c
-    thirdparty/libb64/cdecode.c
     OpenHome/Net/Discovery.cpp
     OpenHome/Debug.cpp
     OpenHome/Net/ControlPoint/CpDeviceCore.cpp
@@ -256,6 +257,7 @@ endif(DEBUG_LOG)
 
 target_compile_definitions(ohNet PUBLIC ${ENDIANNESS})
 add_dependencies(ohNet IncludeCopy)
+target_link_libraries(ohNet ${CONAN_LIBS})
 
 # tests
 

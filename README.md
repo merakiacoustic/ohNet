@@ -29,8 +29,8 @@ libb64/1.2.1
 🐧 mkdir build
 🐧 cd build
 🐧 conan install .. --build missing
-🐧 cmake ..
-#optionally "🐧 cmake .. -GNinja" for quicker builds
+🐧 cmake .. -DCMAKE_BUILD_TYPE=Release
+#optionally "🐧 cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja" for quicker builds
 🐧 cmake --build . -v
 ```
 

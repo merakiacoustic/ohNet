@@ -7,8 +7,8 @@
 
 extern "C"
 {
-#include "../thirdparty/libb64/cencode.h"
-#include "../thirdparty/libb64/cdecode.h"
+#include <b64/cencode.h>
+#include <b64/cdecode.h>
 }
 
 using namespace OpenHome;

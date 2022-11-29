@@ -4,6 +4,9 @@ project(ohNet LANGUAGES CXX C)
 
 set(platform Posix)
 
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+find_package(libb64 CONFIG REQUIRED)
+
 if(WIN32)
     set(platform Windows)
     set(CMAKE_SYSTEM_NAME Windows)
@@ -31,8 +34,6 @@ set(SourcesMain
     OpenHome/Net/Device/Bonjour/Bonjour.cpp
     OpenHome/Buffer.cpp
     OpenHome/Converter.cpp
-    thirdparty/libb64/cencode.c
-    thirdparty/libb64/cdecode.c
     OpenHome/Net/Discovery.cpp
     OpenHome/Debug.cpp
     OpenHome/Net/ControlPoint/CpDeviceCore.cpp
@@ -246,6 +247,10 @@ header_copy(header31 IncludeBase IncludeCopy ${CMAKE_SOURCE_DIR}/${mDNSdir}/mDNS
 
 message("Creating files in " ${CMAKE_CURRENT_BINARY_DIR}/Temp/OpenHome)
 target_include_directories(ohNet SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Temp)
+
+target_include_directories(
+    ohNet PUBLIC $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 set(GENERATED_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/Temp PARENT_SCOPE)
 
 set(ENDIANNESS DEFINE_LITTLE_ENDIAN)
@@ -256,6 +261,7 @@ endif(DEBUG_LOG)
 
 target_compile_definitions(ohNet PUBLIC ${ENDIANNESS})
 add_dependencies(ohNet IncludeCopy)
+target_link_libraries(ohNet PUBLIC libb64::libb64)
 
 # tests
 
@@ -300,4 +306,3 @@ if(${COMPILE_FOR_RPI})
     find_package(Threads REQUIRED)
     target_link_libraries(finder PRIVATE Threads::Threads)
 endif()
-

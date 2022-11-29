@@ -1,0 +1,5 @@
+[requires]
+libb64/1.2.1
+
+[generators]
+CMakeDeps

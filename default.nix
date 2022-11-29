@@ -7,6 +7,11 @@
 
 with pkgs;
 
+let 
+  python-with-my-packages = python3.withPackages (p: with p; [
+    virtualenv
+  ]);
+in 
 mkShell {
   buildInputs = [
     cmake
@@ -14,6 +19,12 @@ mkShell {
     gcc
     gnumake
     ninja
-    # conan install manually the latest version!
+    python-with-my-packages
   ];
+
+  shellHook = ''
+    [ ! -d venv ] && python -m virtualenv venv
+    source venv/bin/activate
+    pip install conan==1.54.0
+  '';
 }

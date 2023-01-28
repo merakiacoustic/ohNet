@@ -5,7 +5,7 @@ project(ohNet LANGUAGES CXX C)
 set(platform Posix)
 
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
-find_package(libb64 CONFIG REQUIRED)
+find_package(b64 CONFIG REQUIRED)
 
 if(WIN32)
     set(platform Windows)
@@ -261,7 +261,7 @@ endif(DEBUG_LOG)
 
 target_compile_definitions(ohNet PUBLIC ${ENDIANNESS})
 add_dependencies(ohNet IncludeCopy)
-target_link_libraries(ohNet PUBLIC libb64::libb64)
+target_link_libraries(ohNet PUBLIC b64::b64)
 
 # tests
 

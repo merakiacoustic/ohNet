@@ -17,8 +17,6 @@ jobs:
         with:
           arch: x86
       - uses: actions/setup-python@v2
-        with:
-          python-version: '2.7'
       - name: Building 
         run: |
           .\make.bat
@@ -46,8 +44,6 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
-        with:
-          python-version: '2.7'
       - name: Setup environment 
         shell: bash
         run: |
@@ -77,8 +73,6 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '11.2.1'
       - name: Building
         run: |
           make

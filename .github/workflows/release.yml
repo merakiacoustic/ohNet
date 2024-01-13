@@ -9,18 +9,13 @@ on:
 
 jobs:
   release-windows:
-    runs-on: windows-2016
-    env:
-      MSVER: "14.16.27023"
-      WKITVER: "10.0.17134.0"
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@master
       - name: Setup MSVC++
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x86
-          sdk: ${{ env.WKITVER }}
-          toolset: ${{ env.MSVER }}
       - uses: actions/setup-python@v2
         with:
           python-version: '2.7'
@@ -47,7 +42,7 @@ jobs:
       CONAN_ARCHS: x86_64
       OH_PLATFORM: Linux-x64
       COMPILER_NAME: gcc
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@v2
@@ -76,7 +71,7 @@ jobs:
           tag: ${{ github.ref }}
 
   release-osx:
-    runs-on: macOS-latest
+    runs-on: macos-12
     env:
       OH_PLATFORM: Mac-x64
     steps:

@@ -27,7 +27,7 @@ jobs:
       - name: Building 
         run: |
           .\make.bat
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         name: Upload artifact
         with:
           name: windows
